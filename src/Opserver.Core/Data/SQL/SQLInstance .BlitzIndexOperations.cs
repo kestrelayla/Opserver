@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
-using Microsoft.Data.SqlClient;
 using Dapper;
 using Opserver.Data.SQL.QueryPlans;
 
@@ -19,7 +18,31 @@ namespace Opserver.Data.SQL
                 {
                     var hasOptions = options != null;
                     var sql = string.Format(GetFetchSQL<BlitzIndexOperation>());
-                    return conn.Query<BlitzIndexOperation>(sql, options).AsList();
+                    var resultSet = new List<BlitzIndexOperation>();
+                    var items = new List<BlitzIndexOperation>();
+
+                    using (var reader = conn.ExecuteReader(sql, options))
+                    {
+                        while (reader.Read())
+                        {
+                            items.Add(new BlitzIndexOperation()
+                            {
+
+                                Priority = (int)reader.GetValue(0),
+                                Finding = reader.GetValue(1).ToString(),
+                                DatabaseName = reader.GetValue(2).ToString(),
+                                Details = reader.GetValue(3).ToString(),
+                                Definition = reader.GetValue(4).ToString(),
+                                SecretColumns = reader.GetValue(5).ToString(),
+                                Usage = reader.GetValue(6).ToString(),
+                                Size = reader.GetValue(7).ToString(),
+                                MoreInfo = reader.GetValue(8).ToString(),
+                                URL = reader.GetValue(9).ToString(),
+                                CreateTSQL = reader.GetValue(10).ToString()
+                            });
+                        }
+                    }
+                    return items;
                 }, 10.Seconds(), 5.Minutes());
         }
 
@@ -62,12 +85,7 @@ namespace Opserver.Data.SQL
                 return (ShowPlanXML)s.Deserialize(r);
             }
 
-            internal const string FetchSQL = @"
-        --CREATE TABLE #spResults (Priority INT, Finding NVARCHAR(MAX), DatabaseName NVARCHAR(MAX), Details NVARCHAR(MAX), Definition NVARCHAR(MAX), SecretColumns NVARCHAR(MAX), Usage NVARCHAR(MAX), Size NVARCHAR(MAX), MoreInfo NVARCHAR(MAX), URL NVARCHAR(MAX), CreateTSQL NVARCHAR(MAX), SampleQueryPlan NVARCHAR(MAX))
-        --INSERT INTO #spResults (Priority, Finding, DatabaseName, Details, Definition, SecretColumns, Usage, Size, MoreInfo, URL, CreateTSQL, SampleQueryPlan)
-        EXEC master..sp_BlitzIndex @DatabaseName = 'StackoverFlow2010'
-
-        --SELECT Priority, Finding, DatabaseName, Details, Definition, SecretColumns, Usage, Size, MoreInfo, URL, CreateTSQL, SampleQueryPlan FROM #spResults";
+            internal const string FetchSQL = @"EXEC master..sp_BlitzIndex";
             public string GetFetchSQL(in SQLServerEngine e)
             {
                 return FetchSQL;

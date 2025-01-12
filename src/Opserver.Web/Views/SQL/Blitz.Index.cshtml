@@ -59,27 +59,27 @@ else
 				<th>Priority</th>
 				<th>Finding</th>
 				<th>DatabaseName</th>
-				<th colspan="2">Details</th>
-				<th colspan="2">Definition</th>
-				<th colspan="2">SecretColumns</th>
-				<th colspan="2">Usage</th>
-				<th colspan="2">Size</th>
-				<th colspan="2">MoreInfo</th>
-				<th colspan="2">URL</th>
-				<th colspan="2">CreateTSQL</th>
+				<th>Details</th>
+				<th>Definition</th>
+				<th>SecretColumns</th>
+				@* <th>Usage</th> *@
+				<th>Size</th>
+				<th>MoreInfo</th>
+				<th>URL</th>
+				<th>CreateTSQL</th>
             </tr>
         </thead>
         <tbody>
         @foreach (var o in topOps)
         {
             <tr class="blitzIndex-row">
-                <td>@o.Priority</td>
-                <td>@o.Finding</td>
+				<td>@o.Priority</td>
+				<td title="@o.Finding">@o.Finding.TruncateWithEllipsis(50)</td>
                 <td>@o.DatabaseName</td>
-                <td>@o.Details</td>
-                <td>@o.Definition</td>
+				<td title="@o.Details">@o.Details.TruncateWithEllipsis(50)</td>
+				<td title="@o.Definition">@o.Definition.TruncateWithEllipsis(50)</td>
                 <td>@o.SecretColumns</td>
-                <td>@o.Usage</td>
+                @* <td>@o.Usage</td> *@
                 <td>@o.Size</td>
                 <td>@o.MoreInfo</td>
                 <td>@o.URL</td>

@@ -12,7 +12,8 @@ namespace Opserver.Views.SQL
         Active = 4,
         Top = 5,
         Connections = 6,
-        Databases = 7
+        Databases = 7,
+        Blitz = 8,
     }
 
     public class DashboardModel

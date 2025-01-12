@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Options;
+using Opserver.Data;
 using Opserver.Data.SQL;
 using Opserver.Helpers;
 using Opserver.Views.SQL;
+using static Opserver.Data.SQL.SQLInstance;
 
 namespace Opserver.Controllers
 {
@@ -88,6 +90,35 @@ namespace Opserver.Controllers
                 "jobs" => PartialView("Instance.Jobs", i),
                 "db-files" => PartialView("Instance.DBFiles", i),
                 _ => ContentNotFound("Unknown summary view requested"),
+            };
+        }
+
+        [Route("sql/blitzIndex")]
+        public ActionResult BlitzIndex(string node, SQLInstance.BlitzIndexSearchOptions options)
+        {
+            var vd = GetBlitzIndexModel(node, options);
+            var i = vd.CurrentInstance;
+
+            if (i != null)
+            {
+                var cache = i.GetBlitzIndexOperations(options);
+                vd.BlitzIndexOperations = cache.Data;
+                vd.ErrorMessage = cache.ErrorMessage;
+            }
+
+            return View("Blitz.Index", vd);
+        }
+
+        private BlitzIndexModel GetBlitzIndexModel(string node, SQLInstance.BlitzIndexSearchOptions options)
+        {
+            var i = Module.GetInstance(node);
+            options.SetDefaults();
+
+            return new BlitzIndexModel
+            {
+                View = SQLViews.Blitz,
+                CurrentInstance = i,
+                BlitzIndexSearchOptions = options
             };
         }
 

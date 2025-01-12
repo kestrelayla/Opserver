@@ -1,0 +1,99 @@
+﻿@model BlitzIndexModel
+@{
+    var i = Model.CurrentInstance;
+	var topOps = Model.BlitzIndexOperations;
+    var errorMessage = Model.ErrorMessage;
+    if (i == null) { return; }
+}
+@functions
+{
+    string ReadableTime(long microSeconds) => TimeSpan.FromMilliseconds(microSeconds / 1000d).ToTimeStringMini();
+    string SortLink(SQLInstance.BlitzIndexSorts sort, string title)
+    {
+		<th class="sortable@(sort == Model.BlitzIndexSearchOptions.Sort ? " current-sort" : "")">
+			@if (sort == Model.BlitzIndexSearchOptions.Sort)
+            {
+                <span class="current-sort" title="@sort.AsString(EnumFormat.Description)">@title</span>
+            }
+            else
+            {
+                <a href="?node=@(Model.CurrentInstance.Name)&sort=@(sort.ToString())@(Model.BlitzIndexOptionsQueryString)" title="Sort by @sort.AsString(EnumFormat.Description)">@title</a>
+            }
+        </th>
+        return null;
+    }
+    string RunInLast(DashboardModel.LastRunInterval interval, string label)
+    {
+        var secs = (int) interval;
+		var isChecked = secs == Model.BlitzIndexSearchOptions.LastRunSeconds;
+        <label>
+            <input type="radio" name="LastRunSeconds" value="@secs.ToString()" checked="@isChecked" /> @label
+        </label>
+        return null;
+    }
+}
+@if (errorMessage.HasValue())
+{
+    <h5 class="page-header">
+        Unknown Operations on @i.Name
+    </h5>
+    <div class="alert alert-danger">
+        <h5>There was an error fetching server status from @i.Name:</h5>
+        <p class="error-stack">
+            @errorMessage
+        </p>
+    </div>
+}
+else
+{
+    <h5 class="page-header">
+		Top queries on @i.Name @(Model.BlitzIndexSearchOptions.Sort.HasValue ? " by " + Model.BlitzIndexSearchOptions.Sort.Value.AsString(EnumFormat.Description) : "")
+        <span class="pull-right">
+			<a href="#/sql/top/filters" class="hover-pulsate@(Model.BlitzIndexSearchOptions.IsNonDefault ? " text-warning" : "")" title="Filter"><i class="fa fa-filter" aria-hidden="true"></i></a>
+            @*<a href="#" class="js-reload-link">Reload</a>*@
+        </span>
+    </h5>
+    <table class="table table-striped table-hover text-nowrap table-super-condensed table-responsive table-row-actions">
+        <thead>
+            <tr class="sort-row sort-category">
+				<th>Priority</th>
+				<th>Finding</th>
+				<th>DatabaseName</th>
+				<th colspan="2">Details</th>
+				<th colspan="2">Definition</th>
+				<th colspan="2">SecretColumns</th>
+				<th colspan="2">Usage</th>
+				<th colspan="2">Size</th>
+				<th colspan="2">MoreInfo</th>
+				<th colspan="2">URL</th>
+				<th colspan="2">CreateTSQL</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var o in topOps)
+        {
+            <tr class="blitzIndex-row">
+                <td>@o.Priority</td>
+                <td>@o.Finding</td>
+                <td>@o.DatabaseName</td>
+                <td>@o.Details</td>
+                <td>@o.Definition</td>
+                <td>@o.SecretColumns</td>
+                <td>@o.Usage</td>
+                <td>@o.Size</td>
+                <td>@o.MoreInfo</td>
+                <td>@o.URL</td>
+                <td>@o.CreateTSQL</td>
+            </tr>
+        }
+        @if (!topOps.Any())
+        {
+            <tr>
+                <td colspan="12">
+                    <div class="no-content">There are no operations in the plan cache on this server.</div>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
